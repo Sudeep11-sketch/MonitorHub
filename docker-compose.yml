@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # 🐘 Database Container Layer
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: monitoring_db       
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sqldeep       
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:                       
+      test: ["CMD-SHELL", "pg_isready -U postgres -d monitoring_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monitor-network
+
+  # ⚙️ Java Spring Boot Backend Application Layer
+  monitoring-backend:
+    build:
+      context: ./MonitoringAPI         
+    container_name: monitoring-backend
+    ports:
+      - "8081:8081"                    
+    depends_on:
+      postgres-db:
+        condition: service_healthy     
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/monitoring_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=sqldeep
+      - SERVER_PORT=8081
+      # 🔐 SECURE PORTFOLIO MATRIX: Reads active keys dynamically or drops to local safe configurations
+ # 🔐 SECURE PORTFOLIO MATRIX: Reads active keys dynamically or drops to local safe configurations
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID:-AC00000000000000000000000000000000}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN:-00000000000000000000000000000000}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER:-+10000000000}
+    networks:
+      - monitor-network
+
+  # 🌐 React Frontend Static Server Layer
+  monitoring-frontend:
+    build:
+      context: ./monitoring_frontend   
+    container_name: monitoring-frontend
+    ports:
+      - "3000:80"                      
+    depends_on:
+      - monitoring-backend
+    networks:
+      - monitor-network
+
+volumes:
+  pgdata:
+
+networks:
+  monitor-network:
+    driver: bridge

@@ -1,0 +1,18 @@
+# 1. Ignore absolutely everything by default
+*
+
+# 2. But DO NOT ignore these specific project files/folders
+!monitoring_frontend/
+!MonitoringAPI/
+!docker-compose.yml
+!README.md
+!.gitignore
+
+# 3. Inside the allowed project folders, ignore standard junk/dependencies
+monitoring_frontend/node_modules/
+monitoring_frontend/build/
+MonitoringAPI/target/
+MonitoringAPI/.settings/
+MonitoringAPI/.classpath
+MonitoringAPI/.project
+.DS_Store
